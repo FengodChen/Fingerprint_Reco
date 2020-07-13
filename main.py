@@ -1,30 +1,33 @@
 import numpy as np
+import cv2 as cv
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import imgOperator
 
 class Net(nn.Module):
-    # 初始化
     def __init__(self):
-        # 官方定义继承
         super(Net, self).__init__()
-        # 定义全连接神经层
-        self.fc1 = nn.Linear(3, 1)
-        #self.fc2 = nn.Linear(3, 1)
-        # 定义l损失率和优化器
-        self.loss = nn.L1Loss()
+
+        self.conv1 = nn.Conv2d(3, 6, 5)
+        self.pool1 = nn.MaxPool2d(2, 2)
+        self.conv2 = nn.Conv2d(6, 16, 5)
+        self.pool1 = nn.MaxPool2d(2, 2)
+        self.fc1 = nn.Linear(16 * 5 * 5, 120)
+        self.fc2 = nn.Linear(120, 84)
+        self.fc3 = nn.Linear(84, 10)
+
+        self.loss = nn.CrossEntropyLoss()
         self.optimizer = torch.optim.SGD(self.parameters(), lr=0.001, momentum=0.9)
 
-    # 定义神经网络
     def forward(self, x):
-        x = self.fc1(x)
-        #x = self.fc2(x)
+        x = self.pool1(F.relu(self.conv1))
+        x = self.pool2(F.relu(self.conv2))
+        x = x.view(-1, 16 * 5 * 5)
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
         return x
-
-    def getRandomData(self, dataNum):
-        inData = torch.rand(dataNum, 3) * 40 + 60
-        outData = inData.sum(1)
-        return (inData, outData)
 
     def train(self, trainNum, data):
         (inData, outData) = data
@@ -40,4 +43,6 @@ class Net(nn.Module):
 
 if __name__ == "__main__":
     net = Net()
-    net.train(1000, net.getRandomData(5000))
+    imageReader = imgOperator.ImageReader('./img')
+    trainData = imageReader.getSet(4, False)
+    net.train(1000, trainData)
