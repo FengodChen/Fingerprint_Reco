@@ -41,9 +41,17 @@ class ImageReader():
             for imgName in imgTree:
                 imgPath = os.path.join(self.path, dirName, imgName)
                 img = cv.imread(imgPath, cv.IMREAD_GRAYSCALE)
-                imgList.append(img)
+                #img = cv.imread(imgPath)
+                imgList.append(np.array([img/255.], dtype=np.float))
+                #img.resize(3, 200, 200)
+                #imgList.append(img)
                 labelList.append(onehotLabel)
         
-        imgList = np.array(imgList, dtype=np.uint8)
+        imgList = np.array(imgList, dtype=np.float)
         labelList = np.array(labelList, dtype=np.float)
         return (imgList, labelList)
+
+if __name__ == '__main__':
+    imageReader = ImageReader('./img')
+    (trainImg_numpy, trainLabel_numpy) = imageReader.getSet(4, False)
+    print(trainImg_numpy.shape)
