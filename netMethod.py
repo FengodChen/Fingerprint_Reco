@@ -16,17 +16,17 @@ class Net(nn.Module):
         self.fc2 = nn.Linear(120, 84)       # in: 120           out: 84
         self.fc3 = nn.Linear(84, 50)        # in: 84            out: 50
 
-        #self.loss = nn.CrossEntropyLoss()
-        self.loss = nn.MSELoss()
+        self.loss = nn.CrossEntropyLoss()
         self.optimizer = torch.optim.SGD(self.parameters(), lr=0.001, momentum=0.9)
 
     def forward(self, x):
-        x = self.pool1(F.relu(self.conv1(x.float())))
+        x = self.pool1(F.relu(self.conv1(x)))
         x = self.pool2(F.relu(self.conv2(x)))
         x = x.view(-1, 16 * 92 * 92)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
-        x = F.normalize(self.fc3(x))
+        #x = F.normalize(self.fc3(x))
+        x = self.fc3(x)
         return x
 
 class Trainer:
@@ -45,8 +45,9 @@ class Trainer:
 
         while (True):
             self.net.optimizer.zero_grad()
-            output = self.net(inData)
-            l = self.net.loss(output.double(), outData.double())
+            output = self.net(inData.float())
+            #l = self.net.loss(output.double(), outData.double())
+            l = self.net.loss(output, outData)
             l.backward()
             self.net.optimizer.step()
 
@@ -54,6 +55,7 @@ class Trainer:
             
             if (i % self.save_epochs == 0):
                 torch.save(self.net.state_dict(), self.save_file)
+                print("Saved to '{}'".format(self.save_file))
             i += 1
 
 class Tester:
@@ -64,16 +66,17 @@ class Tester:
 
     def test(self, data):
         (inData, outData) = data
-        output = self.net(inData)
+        output = self.net(inData.float())
 
         trueArray = []
         predictArray = []
 
         length = len(outData)
         for ptr in range(length):
-            trueArray.append(int(torch.argmax(outData[ptr])))
-            predictArray.append(int(torch.argmax(output[ptr])))
+            print(outData[ptr])
             print(output[ptr])
+            trueArray.append(int(outData[ptr]))
+            predictArray.append(int(output[ptr]))
 
         print(trueArray)
         print(predictArray)
