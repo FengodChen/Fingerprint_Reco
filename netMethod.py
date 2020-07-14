@@ -73,16 +73,19 @@ class Tester:
 
         length = len(outData)
         for ptr in range(length):
-            print(outData[ptr])
-            print(output[ptr])
             trueArray.append(int(outData[ptr]))
-            predictArray.append(int(output[ptr]))
+            predictArray.append(int(torch.argmax(output[ptr])))
 
         print(trueArray)
         print(predictArray)
         
         trueArray = np.array(trueArray, dtype=np.uint32)
         predictArray = np.array(predictArray, dtype=np.uint32)
+
+        accArray = trueArray - predictArray
+        acc = float(np.where(accArray == 0)[0].size) / trueArray.size
+
+        print("Acctuary = {}%".format(acc*100))
 
 def numpy2tensor(np_array):
     return torch.from_numpy(np_array)
