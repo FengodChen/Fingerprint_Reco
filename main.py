@@ -30,25 +30,39 @@ class Net(nn.Module):
         x = self.fc3(x)
         return x
 
-    def train(self, trainNum, data):
-        (inData, outData) = data
-        for i in range(trainNum):
-            self.optimizer.zero_grad()
-            output = self(inData)
-            l = self.loss(output.double(), outData.double())
-            l.backward()
-            self.optimizer.step()
+class Trainer:
+    def __init__(self, save_file:str, save_epochs:int, load_file:str=None):
+        self.save_file = save_file
+        self.save_epochs = save_epochs
+        self.net = Net()
 
-            if (i % 10 == 0):
-                print("Epoch: {}, loss = {}".format(i, l.item()))
+        if (not load_file==None):
+            self.net.load_state_dict(torch.load(load_file))
+            self.net.eval()
+
+    def train(self, data):
+        (inData, outData) = data
+        i = 1
+
+        while (True):
+            self.net.optimizer.zero_grad()
+            output = self.net(inData)
+            l = self.net.loss(output.double(), outData.double())
+            l.backward()
+            self.net.optimizer.step()
+
+            print("Epoch: {}, loss = {}".format(i, l.item()))
+            
+            if (i % self.save_epochs == 0):
+                torch.save(self.net.state_dict(), self.save_file)
+            i += 1
 
 if __name__ == "__main__":
-    net = Net()
-
     imageReader = imgOperator.ImageReader('./img')
     (trainImg_numpy, trainLabel_numpy) = imageReader.getSet(4, False)
     trainImg_tensor = torch.from_numpy(trainImg_numpy)
     trainLabel_tensor = torch.from_numpy(trainLabel_numpy)
     trainData_tensor = (trainImg_tensor, trainLabel_tensor)
 
-    net.train(1000, trainData_tensor)
+    trainer = Trainer('./save.pth', 50, './load.pth')
+    trainer.train(trainData_tensor)
