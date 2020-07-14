@@ -2,5 +2,8 @@ deps:
 	pip3 install -r requirements.txt
 	apt install python3-opencv -y
 
-run:
-	python3 main.py
+train:
+	python3 train.py
+
+test:
+	python3 test.py

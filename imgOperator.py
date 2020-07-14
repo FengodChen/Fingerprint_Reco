@@ -54,4 +54,7 @@ class ImageReader():
 if __name__ == '__main__':
     imageReader = ImageReader('./img')
     (trainImg_numpy, trainLabel_numpy) = imageReader.getSet(4, False)
-    print(trainImg_numpy.shape)
+    (testImg_numpy, testLabel_numpy) = imageReader.getSet(1, True)
+    print(trainLabel_numpy)
+    for i in testLabel_numpy:
+        print(i)

@@ -3,7 +3,6 @@ import cv2 as cv
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import imgOperator
 
 class Net(nn.Module):
     def __init__(self):
@@ -27,7 +26,7 @@ class Net(nn.Module):
         x = x.view(-1, 16 * 92 * 92)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
-        x = self.fc3(x)
+        x = F.normalize(self.fc3(x))
         return x
 
 class Trainer:
@@ -57,12 +56,30 @@ class Trainer:
                 torch.save(self.net.state_dict(), self.save_file)
             i += 1
 
-if __name__ == "__main__":
-    imageReader = imgOperator.ImageReader('./img')
-    (trainImg_numpy, trainLabel_numpy) = imageReader.getSet(4, False)
-    trainImg_tensor = torch.from_numpy(trainImg_numpy)
-    trainLabel_tensor = torch.from_numpy(trainLabel_numpy)
-    trainData_tensor = (trainImg_tensor, trainLabel_tensor)
+class Tester:
+    def __init__(self, load_file:str):
+        self.net = Net()
+        self.net.load_state_dict(torch.load(load_file))
+        self.net.eval()
 
-    trainer = Trainer('./save.pth', 50, './load.pth')
-    trainer.train(trainData_tensor)
+    def test(self, data):
+        (inData, outData) = data
+        output = self.net(inData)
+
+        trueArray = []
+        predictArray = []
+
+        length = len(outData)
+        for ptr in range(length):
+            trueArray.append(int(torch.argmax(outData[ptr])))
+            predictArray.append(int(torch.argmax(output[ptr])))
+            print(output[ptr])
+
+        print(trueArray)
+        print(predictArray)
+        
+        trueArray = np.array(trueArray, dtype=np.uint32)
+        predictArray = np.array(predictArray, dtype=np.uint32)
+
+def numpy2tensor(np_array):
+    return torch.from_numpy(np_array)
