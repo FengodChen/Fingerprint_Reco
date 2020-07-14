@@ -47,8 +47,8 @@ class ImageReader():
                 #imgList.append(img)
                 labelList.append(onehotLabel)
         
-        imgList = np.array(imgList, dtype=np.float)
-        labelList = np.array(labelList, dtype=np.float)
+        imgList = np.array(imgList, dtype=np.double)
+        labelList = np.array(labelList, dtype=np.double)
         return (imgList, labelList)
 
 if __name__ == '__main__':

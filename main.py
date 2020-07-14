@@ -17,7 +17,8 @@ class Net(nn.Module):
         self.fc2 = nn.Linear(120, 84)       # in: 120           out: 84
         self.fc3 = nn.Linear(84, 50)        # in: 84            out: 50
 
-        self.loss = nn.CrossEntropyLoss()
+        #self.loss = nn.CrossEntropyLoss()
+        self.loss = nn.MSELoss()
         self.optimizer = torch.optim.SGD(self.parameters(), lr=0.001, momentum=0.9)
 
     def forward(self, x):
@@ -34,13 +35,11 @@ class Net(nn.Module):
         for i in range(trainNum):
             self.optimizer.zero_grad()
             output = self(inData)
-            print(output.shape)
-            print(outData.shape)
-            l = self.loss(output, outData)
+            l = self.loss(output.double(), outData.double())
             l.backward()
             self.optimizer.step()
 
-            if (i % 100 == 0):
+            if (i % 10 == 0):
                 print("Epoch: {}, loss = {}".format(i, l.item()))
 
 if __name__ == "__main__":
@@ -48,8 +47,6 @@ if __name__ == "__main__":
 
     imageReader = imgOperator.ImageReader('./img')
     (trainImg_numpy, trainLabel_numpy) = imageReader.getSet(4, False)
-    #trainImg_tensor = torch.tensor(trainImg_numpy)
-    #trainLabel_tensor = torch.tensor(trainLabel_numpy)
     trainImg_tensor = torch.from_numpy(trainImg_numpy)
     trainLabel_tensor = torch.from_numpy(trainLabel_numpy)
     trainData_tensor = (trainImg_tensor, trainLabel_tensor)

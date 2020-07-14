@@ -1,5 +1,5 @@
 deps:
-	pip3 install -r requirements.txt --user
+	pip3 install -r requirements.txt
 	apt install python3-opencv -y
 
 run:
